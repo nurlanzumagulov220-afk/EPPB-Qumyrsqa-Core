@@ -1,0 +1,9 @@
+﻿============================================================
+QUMYRSQA CORE: EPPB GENESIS MANIFEST
+Authorized by: Nurlan (Kalb Master)
+============================================================
+1. NO HARDCODE: Forms = JSON Atoms.
+2. DYNAMIC MAPPING: Context-aware UI via Pre-fill Agent.
+3. CAAS: Compliance as a Service.
+4. LEASING ENGINE: Built-in Annuity Formula.
+============================================================
