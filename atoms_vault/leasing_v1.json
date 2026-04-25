@@ -1,46 +1,16 @@
 ﻿{
   "tamga_id": "018f15a2-8b3d-7c2a-9e4f-556677889900",
-  "v_clock": 1,
-  "service_name": "Приобретение вагонов в лизинг",
-  "version": "1.0",
+  "service_name": "риобретение вагонов в лизинг (с расчетом)",
+  "version": "1.1",
   "data_schema": {
-    "applicant_iin_bin": {
-      "type": "string",
-      "label": "ИИН/БИН заявителя",
-      "source": "egov_idp_mock",
-      "editable": false
-    },
-    "company_age_years": {
-      "type": "integer",
-      "label": "Срок существования компании (лет)",
-      "source": "egov_idp_mock",
-      "editable": false
-    },
-    "wagon_type": {
-      "type": "enum",
-      "label": "Тип запрашиваемого вагона",
-      "options": ["Полувагон", "Цистерна", "Зерновоз"],
-      "editable": true
-    },
-    "wagon_count": {
-      "type": "integer",
-      "label": "Количество единиц",
-      "editable": true,
-      "validation": { "min": 1, "max": 50 }
-    }
+    "applicant_iin_bin": { "type": "string", "label": " заявителя", "source": "egov_idp_mock", "editable": false },
+    "wagon_type": { "type": "enum", "label": "Тип вагона", "options": ["олувагон", "Цистерна"], "editable": true },
+    "wagon_count": { "type": "integer", "label": "оличество", "editable": true },
+    "lease_term_months": { "type": "integer", "label": "Срок лизинга (мес)", "editable": true, "default": 60 },
+    "interest_rate": { "type": "float", "label": "Ставка (%)", "editable": false, "default": 14.5 }
   },
-  "business_logic": {
-    "routing": [
-      {
-        "condition": "company_age_years < 2",
-        "action": "set_status",
-        "value": "MANUAL_RISK_REVIEW"
-      },
-      {
-        "condition": "company_age_years >= 2",
-        "action": "set_status",
-        "value": "AUTO_SCORING"
-      }
-    ]
+  "logic_math": {
+    "formula": "annuity",
+    "target_field": "monthly_payment"
   }
 }

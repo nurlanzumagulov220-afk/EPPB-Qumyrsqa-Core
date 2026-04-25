@@ -77,7 +77,7 @@ def build_ui(iin):
         html_content += "</div>"
 
     html_content += """
-                <button type="button" onclick="alert('аявка принята! алидация выполнена на базе правил тома.')">тправить на рассмотрение</button>
+                <button type="button" onclick="const p = 5000000 * document.querySelector("input[type=number]").value; const r = 0.145/12; const n = 60; const payment = Math.round(p * (r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1)); alert('редварительный расчет: ' + payment + ' ₸/мес. аявка принята! алидация выполнена на базе правил тома.')">тправить на рассмотрение</button>
             </form>
         </div>
     </body>
@@ -92,3 +92,4 @@ def build_ui(iin):
 
 if __name__ == "__main__":
     build_ui("123456789012")
+
