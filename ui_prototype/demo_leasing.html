@@ -1,32 +1,59 @@
-
-    <!DOCTYPE html>
-    <html lang="ru">
-    <head>
-        <meta charset="UTF-8">
-        <title>Приобретение вагонов в лизинг</title>
-        <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background: #eef2f7; color: #333; }
-            .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 550px; margin: auto; border: 1px solid #d1d9e6; }
-            .field { margin-bottom: 18px; }
-            label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 14px; color: #555; }
-            input, select { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; transition: border-color .2s; }
-            input:focus { border-color: #0056b3; outline: none; }
-            .readonly { background: #f8f9fa; color: #6c757d; cursor: not-allowed; }
-            button { background: #002f6c; color: white; padding: 14px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
-            button:hover { background: #001f4d; }
-            .badge { display: inline-block; padding: 6px 12px; background: #d4edda; color: #155724; border-radius: 20px; font-size: 12px; margin-bottom: 25px; font-weight: bold; border: 1px solid #c3e6cb; }
-            h2 { margin-top: 0; color: #002f6c; }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h2>Приобретение вагонов в лизинг</h2>
-            <div class="badge">✓ ерифицировано eGov IDP</div>
-            <form>
-    <div class='field'><label>ИИН/БИН заявителя</label><input type='text' value='ТОО 'Qumyrsqa Logistics' (: 123456789012)' readonly class='readonly' /></div><div class='field'><label>Срок существования компании (лет)</label><input type='number' value='3' readonly class='readonly' /></div><div class='field'><label>Тип запрашиваемого вагона</label><select ><option value='Полувагон'>Полувагон</option><option value='Цистерна'>Цистерна</option><option value='Зерновоз'>Зерновоз</option></select></div><div class='field'><label>Количество единиц</label><input type='number' value=''  /></div>
-                <button type="button" onclick="alert('аявка принята! алидация выполнена на базе правил тома.')">тправить на рассмотрение</button>
-            </form>
-        </div>
-    </body>
-    </html>
-    
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>риобретение вагонов в лизинг (с расчетом)</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: #eef2f7; }
+        .card { background: white; padding: 30px; border-radius: 12px; max-width: 500px; margin: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .field { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #444; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .readonly { background: #f0f0f0; color: #777; pointer-events: none; }
+        button { background: #002f6c; color: white; padding: 15px; border: none; border-radius: 6px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .badge { background: #d4edda; color: #155724; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin-bottom: 20px; display: inline-block; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>риобретение вагонов в лизинг (с расчетом)</h2>
+        <div class="badge">✓ Верифицировано eGov IDP</div>
+        <form id="leasingForm">
+            <div class='field'><label> заявителя</label>
+            <input type='text' value='ТОО 'Qumyrsqa Logistics'' readonly class='readonly'>
+            </div>
+            <div class='field'><label>Тип вагона</label>
+            <select >
+                <option>олувагон</option>
+                <option>Цистерна</option>
+                <option>ерновоз</option>
+            </select>
+            </div>
+            <div class='field'><label>оличество единиц</label>
+            <input type='text' value='' >
+            </div>
+            <div class='field'><label>Срок лизинга (мес)</label>
+            <input type='text' value='60' >
+            </div>
+            <div class='field'><label>Ставка (%)</label>
+            <input type='text' value='14.5' readonly class='readonly'>
+            </div>
+            <button type="button" onclick="calculate()">Отправить на рассмотрение</button>
+        </form>
+    </div>
+    <script>
+        function calculate() {
+            const count = document.querySelectorAll('input[type=text]')[1].value;
+            const term = document.querySelectorAll('input[type=text]')[2].value;
+            const rate = document.querySelectorAll('input[type=text]')[3].value;
+            
+            const p = 15000000 * count; 
+            const r = (rate / 100) / 12;
+            const n = term;
+            const payment = Math.round(p * (r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1));
+            
+            alert('Предварительный аннуитетный платеж: ' + payment.toLocaleString('ru-RU') + ' ₸/мес. Заявка отправлена в обработку!');
+        }
+    </script>
+</body>
+</html>

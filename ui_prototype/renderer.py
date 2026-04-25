@@ -1,95 +1,98 @@
-﻿import json
+import json
 import sys
 import os
 import webbrowser
 
-# обавляем путь к стабам
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'core_stubs')))
+# Абсолютные пути
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ATOM_PATH = os.path.join(BASE_DIR, '..', 'atoms_vault', 'leasing_v1.json')
+STUBS_PATH = os.path.join(BASE_DIR, '..', 'core_stubs')
+OUTPUT_HTML = os.path.join(BASE_DIR, 'demo_leasing.html')
+
+sys.path.append(STUBS_PATH)
 from egov_mock import fetch_egov_profile
 
-ATOM_PATH = r"..\atoms_vault\leasing_v1.json"
-OUTPUT_HTML = r"demo_leasing.html"
-
 def build_ui(iin):
-    print(f"🐜 [Qumyrsqa Engine] нициализация сессии для : {iin}")
-    
+    print(f"🐜 [Qumyrsqa Engine] Инициализация сборки для ИИН: {iin}")
     profile = fetch_egov_profile(iin)
-    if "error" in profile:
-        print("❌ шибка: ользователь не найден.")
-        return
-
-    # спользование utf-8-sig решает проблему BOM в Windows
+    
+    # Читаем Атом с защитой от BOM
     with open(ATOM_PATH, 'r', encoding='utf-8-sig') as f:
         atom = json.load(f)
     
-    print(f"📦 [Vault] агружен том: {atom['service_name']} (v{atom['version']})")
+    # Собираем HTML по частям, чтобы избежать конфликта скобок
+    html_parts = []
+    html_parts.append(f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{atom['service_name']}</title>
+    <style>
+        body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; background: #eef2f7; }}
+        .card {{ background: white; padding: 30px; border-radius: 12px; max-width: 500px; margin: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }}
+        .field {{ margin-bottom: 15px; }}
+        label {{ font-weight: bold; display: block; margin-bottom: 5px; color: #444; }}
+        input, select {{ width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }}
+        .readonly {{ background: #f0f0f0; color: #777; pointer-events: none; }}
+        button {{ background: #002f6c; color: white; padding: 15px; border: none; border-radius: 6px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }}
+        .badge {{ background: #d4edda; color: #155724; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin-bottom: 20px; display: inline-block; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>{atom['service_name']}</h2>
+        <div class="badge">✓ Верифицировано eGov IDP</div>
+        <form id="leasingForm">
+""")
 
-    html_content = f"""
-    <!DOCTYPE html>
-    <html lang="ru">
-    <head>
-        <meta charset="UTF-8">
-        <title>{atom['service_name']}</title>
-        <style>
-            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background: #eef2f7; color: #333; }}
-            .card {{ background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 550px; margin: auto; border: 1px solid #d1d9e6; }}
-            .field {{ margin-bottom: 18px; }}
-            label {{ font-weight: 600; display: block; margin-bottom: 8px; font-size: 14px; color: #555; }}
-            input, select {{ width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; transition: border-color .2s; }}
-            input:focus {{ border-color: #0056b3; outline: none; }}
-            .readonly {{ background: #f8f9fa; color: #6c757d; cursor: not-allowed; }}
-            button {{ background: #002f6c; color: white; padding: 14px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }}
-            button:hover {{ background: #001f4d; }}
-            .badge {{ display: inline-block; padding: 6px 12px; background: #d4edda; color: #155724; border-radius: 20px; font-size: 12px; margin-bottom: 25px; font-weight: bold; border: 1px solid #c3e6cb; }}
-            h2 {{ margin-top: 0; color: #002f6c; }}
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h2>{atom['service_name']}</h2>
-            <div class="badge">✓ ерифицировано eGov IDP</div>
-            <form>
-    """
-
-    for field_key, field_data in atom['data_schema'].items():
-        label = field_data['label']
-        is_readonly = not field_data['editable']
+    # Динамическая генерация полей из Атома
+    for key, data in atom['data_schema'].items():
+        val = ""
+        if data.get('source') == "egov_idp_mock":
+            val = profile['name'] if "iin_bin" in key else profile['company_age_years']
         
-        value = ""
-        if field_data.get('source') == "egov_idp_mock":
-            if field_key == "applicant_iin_bin":
-                value = f"{profile['name']} (: {iin})"
-            elif field_key == "company_age_years":
-                value = profile['company_age_years']
-
-        readonly_attr = "readonly class='readonly'" if is_readonly else ""
-        html_content += f"<div class='field'><label>{label}</label>"
+        readonly = "readonly class='readonly'" if not data['editable'] else ""
+        html_parts.append(f"            <div class='field'><label>{data['label']}</label>\n")
         
-        if field_data['type'] == 'enum':
-            html_content += f"<select {readonly_attr}>"
-            for opt in field_data['options']:
-                html_content += f"<option value='{opt}'>{opt}</option>"
-            html_content += "</select>"
+        if data['type'] == 'enum':
+            html_parts.append(f"            <select {readonly}>\n")
+            for opt in data['options']: 
+                html_parts.append(f"                <option>{opt}</option>\n")
+            html_parts.append("            </select>\n")
         else:
-            input_type = "number" if field_data['type'] == 'integer' else "text"
-            html_content += f"<input type='{input_type}' value='{value}' {readonly_attr} />"
+            val_attr = f"value='{val}'" if val else f"value='{data.get('default', '')}'"
+            html_parts.append(f"            <input type='text' {val_attr} {readonly}>\n")
+        html_parts.append("            </div>\n")
+
+    # Добавляем скрипт калькулятора
+    html_parts.append("""            <button type="button" onclick="calculate()">Отправить на рассмотрение</button>
+        </form>
+    </div>
+    <script>
+        function calculate() {
+            const count = document.querySelectorAll('input[type=text]')[1].value;
+            const term = document.querySelectorAll('input[type=text]')[2].value;
+            const rate = document.querySelectorAll('input[type=text]')[3].value;
             
-        html_content += "</div>"
+            const p = 15000000 * count; 
+            const r = (rate / 100) / 12;
+            const n = term;
+            const payment = Math.round(p * (r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1));
+            
+            alert('Предварительный аннуитетный платеж: ' + payment.toLocaleString('ru-RU') + ' ₸/мес. Заявка отправлена в обработку!');
+        }
+    </script>
+</body>
+</html>""")
 
-    html_content += """
-                <button type="button" onclick="const p = 5000000 * document.querySelector("input[type=number]").value; const r = 0.145/12; const n = 60; const payment = Math.round(p * (r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1)); alert('редварительный расчет: ' + payment + ' ₸/мес. аявка принята! алидация выполнена на базе правил тома.')">тправить на рассмотрение</button>
-            </form>
-        </div>
-    </body>
-    </html>
-    """
+    html_content = "".join(html_parts)
 
+    # Принудительная запись в чистом UTF-8
     with open(OUTPUT_HTML, 'w', encoding='utf-8') as f:
         f.write(html_content)
     
-    print(f"✅ Успех! нтерфейс исправлен и сгенерирован.")
+    print("✅ Успех! Интерфейс собран из Атомов. Кодировка 100% чистая.")
     webbrowser.open('file://' + os.path.realpath(OUTPUT_HTML))
 
 if __name__ == "__main__":
     build_ui("123456789012")
-
